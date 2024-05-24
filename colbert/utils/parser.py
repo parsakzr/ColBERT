@@ -61,7 +61,9 @@ class Arguments:
 
     def add_model_inference_parameters(self):
         self.add_argument("--pretrained", dest="pretrained_model", required=True)
-        self.add_argument("--checkpoint", dest="checkpoint", required=True)
+        self.add_argument(
+            "--checkpoint", dest="checkpoint", default=None, required=False
+        )
         self.add_argument("--bsize", dest="bsize", default=128, type=int)
         self.add_argument("--amp", dest="amp", default=False, action="store_true")
 
