@@ -18,7 +18,7 @@ def load_model(args, do_print=True):
         dim=args.dim,
         similarity_metric=args.similarity,
         mask_punctuation=args.mask_punctuation,
-        tokenizer_model=args.tokenizer_model,
+        tokenizer_model=args.pretrained_model,
     )
     colbert = colbert.to(DEVICE)
 
