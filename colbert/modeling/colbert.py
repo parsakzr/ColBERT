@@ -7,7 +7,16 @@ from colbert.parameters import DEVICE
 
 
 class ColBERT(BertPreTrainedModel):
-    def __init__(self, config, query_maxlen, doc_maxlen, mask_punctuation, dim=128, similarity_metric='cosine'):
+    def __init__(
+        self,
+        config,
+        query_maxlen,
+        doc_maxlen,
+        mask_punctuation,
+        tokenizer_model="bert-base-uncased",
+        dim=128,
+        similarity_metric="cosine",
+    ):
 
         super(ColBERT, self).__init__(config)
 
@@ -20,10 +29,15 @@ class ColBERT(BertPreTrainedModel):
         self.skiplist = {}
 
         if self.mask_punctuation:
-            self.tokenizer = BertTokenizerFast.from_pretrained(config.pretrained_model)
-            self.skiplist = {w: True
-                             for symbol in string.punctuation
-                             for w in [symbol, self.tokenizer.encode(symbol, add_special_tokens=False)[0]]}
+            self.tokenizer = BertTokenizerFast.from_pretrained(tokenizer_model)
+            self.skiplist = {
+                w: True
+                for symbol in string.punctuation
+                for w in [
+                    symbol,
+                    self.tokenizer.encode(symbol, add_special_tokens=False)[0],
+                ]
+            }
 
         self.bert = BertModel(config)
         self.linear = nn.Linear(config.hidden_size, dim, bias=False)
@@ -57,12 +71,19 @@ class ColBERT(BertPreTrainedModel):
         return D
 
     def score(self, Q, D):
-        if self.similarity_metric == 'cosine':
+        if self.similarity_metric == "cosine":
             return (Q @ D.permute(0, 2, 1)).max(2).values.sum(1)
 
-        assert self.similarity_metric == 'l2'
-        return (-1.0 * ((Q.unsqueeze(2) - D.unsqueeze(1))**2).sum(-1)).max(-1).values.sum(-1)
+        assert self.similarity_metric == "l2"
+        return (
+            (-1.0 * ((Q.unsqueeze(2) - D.unsqueeze(1)) ** 2).sum(-1))
+            .max(-1)
+            .values.sum(-1)
+        )
 
     def mask(self, input_ids):
-        mask = [[(x not in self.skiplist) and (x != 0) for x in d] for d in input_ids.cpu().tolist()]
+        mask = [
+            [(x not in self.skiplist) and (x != 0) for x in d]
+            for d in input_ids.cpu().tolist()
+        ]
         return mask
