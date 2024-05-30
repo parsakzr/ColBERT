@@ -3,11 +3,11 @@ import torch
 import torch.nn as nn
 
 from transformers import BertPreTrainedModel, BertModel, BertTokenizerFast
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModel
 from colbert.parameters import DEVICE
 
 
-class ColBERT(BertPreTrainedModel):
+class ColBERT(AutoModel):
     def __init__(
         self,
         config,
@@ -40,7 +40,7 @@ class ColBERT(BertPreTrainedModel):
                 ]
             }
 
-        self.bert = BertModel(config)
+        self.bert = AutoModel(config)
         self.linear = nn.Linear(config.hidden_size, dim, bias=False)
 
         self.init_weights()
